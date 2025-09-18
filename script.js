@@ -519,10 +519,11 @@ function downloadFiles() {
   loadPixels();
   for (let i = 0; i < pixels.length; i += 4) {
     pixelValue = (chans[(3*i/4)+0]||0) // functions[fIndex](pixels[i], rperiod, 255);
-    pixels[i] = 255 - pixelValue * 255 * redOpacity;
-    pixels[i + 1] = 255 - pixelValue * 255 * redOpacity;
-    pixels[i + 2] = 255 - pixelValue * 255 * redOpacity;
-    pixels[i + 3] = 255;
+        let grey=tosrgb(pixelValue*blueOpacity) // need to apply gamma and reverse I think
+        pixels[i] = grey;
+        pixels[i + 1] = grey;
+        pixels[i + 2] = grey;
+        pixels[i + 3] = 255;
   }
   updatePixels();
 
@@ -537,10 +538,11 @@ function downloadFiles() {
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
       pixelValue = (chans[(3*i/4)+1]||0) // functions[fIndex](pixels[i + 1], gperiod, 255);
-      pixels[i] = 255 - pixelValue * 255 * greenOpacity;
-      pixels[i + 1] = 255 - pixelValue * 255 * greenOpacity;
-      pixels[i + 2] = 255 - pixelValue * 255 * greenOpacity;
-      pixels[i + 3] = 255;
+        let grey=tosrgb(pixelValue*blueOpacity) // need to apply gamma and reverse I think
+        pixels[i] = grey;
+        pixels[i + 1] = grey;
+        pixels[i + 2] = grey;
+        pixels[i + 3] = 255;
     }
     updatePixels();
 
@@ -556,9 +558,10 @@ function downloadFiles() {
       loadPixels();
       for (let i = 0; i < pixels.length; i += 4) {
         pixelValue = (chans[(3*i/4)+2]||0) // functions[fIndex](pixels[i + 2], bperiod, 255);
-        pixels[i] = 255 - pixelValue * 255 * blueOpacity;
-        pixels[i + 1] = 255 - pixelValue * 255 * blueOpacity;
-        pixels[i + 2] = 255 - pixelValue * 255 * blueOpacity;
+        let grey=tosrgb(pixelValue*blueOpacity) // need to apply gamma and reverse I think
+        pixels[i] = grey;
+        pixels[i + 1] = grey;
+        pixels[i + 2] = grey;
         pixels[i + 3] = 255;
       }
       updatePixels();
