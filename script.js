@@ -63,6 +63,45 @@ let V3decompose=function(v,vs)
 	return rs
 }
 
+// I think this one is slower...
+let V3decompose_alt=function(v,vs)
+{
+	let rs=[ 0,0,0 ]
+	
+	let step=1
+	for(i=0;i<=10;i++) // repeat a few times in a brute search
+	{
+		let d=V3dist(v,vs,rs)
+		let jcount=0
+		let best_d=1024
+		let best_rs=[ rs[0] , rs[1] , rs[2] ]
+		for(let r=-1;r<=1;r++)
+		{
+			for(let g=-1;g<=1;g++)
+			{
+				for(let b=-1;b<=1;b++)
+				{
+					let r2=[ c1amp(rs[0]+(step*r)) , c1amp(rs[1]+(step*g)) , c1amp(rs[2]+(step*b)) ]
+					let d2=V3dist(v,vs,r2)
+					if(d2<best_d)
+					{
+						best_d=d2
+						best_rs=r2
+					}
+				}
+			}
+		}
+		rs=best_rs
+		step=step/2
+
+// print how close we are and solution
+//console.log(i,V3len(V3sub(v, V3add(V3add(V3scale(vs[0],rs[0]),V3scale(vs[1],rs[1])),V3scale(vs[2],rs[2])) )) , rs )
+
+	}
+	
+	return rs
+}
+
 /*
 let V3decompose_test=function()
 {
