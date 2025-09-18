@@ -1,3 +1,86 @@
+
+// decompose vector3 v into 0-1 "alphas" of the array of 3 vector3 in vs,
+// each vector must be 0-1 in range no negatives ( so colors )
+// returns array of same length as vs
+// be sure to convert to linear color space and invert before calling this
+// use a 0,0,0 v3 to disable one of the vs
+let V3scale=function(a,b){ return [ a[0]*b , a[1]*b , a[2]*b ] }
+let V3mul=function(a,b){ return [ a[0]*b[0] , a[1]*b[1] , a[2]*b[2] ] }
+let V3add=function(a,b){ return [ a[0]+b[0] , a[1]+b[1] , a[2]+b[2] ] }
+let V3sub=function(a,b){ return [ a[0]-b[0] , a[1]-b[1] , a[2]-b[2] ] }
+let V3dot=function(a,b){ return a[0]*b[0] + a[1]*b[1] + a[2]*b[2] }
+let V3len=function(a){ return Math.sqrt(a[0]*a[0] + a[1]*a[1] + a[2]*a[2]) }
+let V3cc=function(rs,vs){ return V3add(V3add(V3scale(vs[0],rs[0]),V3scale(vs[1],rs[1])),V3scale(vs[2],rs[2])) }
+let V3de=function(a,b){ return Math.min( a[0]/b[0] , a[1]/b[1] , a[2]/b[2] ) }
+let V3dist=function(v,vs,rs){ return V3len(V3sub(v, V3add(V3add(V3scale(vs[0],rs[0]),V3scale(vs[1],rs[1])),V3scale(vs[2],rs[2])) )) }
+let c1amp=function(a) { if(a<0){return 0}if(a>1){return 1}return a}
+
+let unsrgb=function(n){ return 1-Math.pow(n/255,2.2) }
+let tosrgb=function(n){ return Math.floor(0.5+Math.pow(1-n,1/2.2)*255) }
+
+let V3decompose=function(v,vs)
+{
+	let rs=[ 0,0,0 ]
+	
+	let step=1
+	let imax=128
+	for(i=0;i<=imax;i++) // repeat a few times in a brute search
+	{
+		let d=V3dist(v,vs,rs)
+		let jcount=0
+		for(j=0;j<3;j++)
+		{
+			let r2=[ rs[0] , rs[1] , rs[2] ]
+			r2[j]=c1amp(r2[j]+step)
+			let d2=V3dist(v,vs,r2)
+			if(d2<d) { rs[j]=c1amp(rs[j]+step) } // good step +
+			else
+			{
+				let r2=[ rs[0] , rs[1] , rs[2] ]
+				r2[j]=c1amp(r2[j]-step)
+				let d2=V3dist(v,vs,r2)
+				if(d2<d) { rs[j]=c1amp(rs[j]-step) } // good step -
+				else
+				{
+					jcount++ // no step
+				}
+			}
+		}
+
+// print how close we are and solution
+//console.log(i,V3len(V3sub(v, V3add(V3add(V3scale(vs[0],rs[0]),V3scale(vs[1],rs[1])),V3scale(vs[2],rs[2])) )) , rs )
+
+		if(jcount==3) // smaller step
+		{
+			step=step/2
+			if(step<1/65536) // good enough
+			{
+				return rs
+			}
+		}
+	}
+	
+	return rs
+}
+
+/*
+let V3decompose_test=function()
+{
+	let v=[Math.random(),Math.random(),Math.random()]
+	let vs=[
+		[Math.random(),Math.random(),Math.random()],
+		[Math.random(),Math.random(),Math.random()],
+		[Math.random(),Math.random(),Math.random()],
+	]
+	let rs=V3decompose(v,vs)
+	let r=V3add(V3add(V3scale(vs[0],rs[0]),V3scale(vs[1],rs[1])),V3scale(vs[2],rs[2]))
+	console.log(v,vs[0],vs[1],vs[2])
+	console.log(rs,r)
+}
+for(let i=0; i<10 ; i++) { V3decompose_test() }
+*/
+
+
 let input;
 let img;
 let scale = 1;
@@ -138,6 +221,47 @@ function getColors() {
     image.remove();
   });
 
+	// build inks
+	let vs=[]
+	vs[0]=[0,0,0]
+	if (redInk != none) {
+		vs[0][0]=unsrgb(red(redInk))
+		vs[0][1]=unsrgb(green(redInk))
+		vs[0][2]=unsrgb(blue(redInk))
+	}
+	vs[1]=[0,0,0]
+	if (greenInk != none) {
+		vs[1][0]=unsrgb(red(greenInk))
+		vs[1][1]=unsrgb(green(greenInk))
+		vs[1][2]=unsrgb(blue(greenInk))
+	}
+	vs[2]=[0,0,0]
+	if (blueInk != none) {
+		vs[2][0]=unsrgb(red(blueInk))
+		vs[2][1]=unsrgb(green(blueInk))
+		vs[2][2]=unsrgb(blue(blueInk))
+	}
+	// a place to keep output
+	let chans=[]
+
+// not sure what these do
+    image(img, width / 2, height / 2, img.width * scale, img.height * scale);
+    loadPixels();
+// this is slow but more correct (functions no longer do anything)
+    for( let i = 0 ; i < pixels.length ; i++ )
+    {
+		let pi=i*4
+		let ci=i*3
+		let v=[0,0,0]
+		v[0]=unsrgb(pixels[pi  ])
+		v[1]=unsrgb(pixels[pi+1])
+		v[2]=unsrgb(pixels[pi+2])
+		let rs=V3decompose(v,vs)
+		chans[ci+0]=rs[0]
+		chans[ci+1]=rs[1]
+		chans[ci+2]=rs[2]
+    }
+
   //get red pixels
   if (redInk != none) {
     image(img, width / 2, height / 2, img.width * scale, img.height * scale);
@@ -146,11 +270,11 @@ function getColors() {
 
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = functions[fIndex](pixels[i], rperiod, 255);
+//      pixelValue = functions[fIndex](pixels[i], rperiod, 255);
       pixels[i] = red(redInk);
       pixels[i + 1] = green(redInk);
       pixels[i + 2] = blue(redInk);
-      pixels[i + 3] = pixelValue * 255 * redOpacity;
+      pixels[i + 3] = (chans[(3*i/4)+0]||0) * 255 * redOpacity;
     }
     updatePixels();
 
@@ -175,11 +299,11 @@ function getColors() {
     loadPixels();
 
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = functions[fIndex](pixels[i + 1], gperiod, 255);
+//      pixelValue = functions[fIndex](pixels[i + 1], gperiod, 255);
       pixels[i] = red(greenInk);
       pixels[i + 1] = green(greenInk);
       pixels[i + 2] = blue(greenInk);
-      pixels[i + 3] = pixelValue * 255 * greenOpacity;
+      pixels[i + 3] = (chans[(3*i/4)+1]||0) * 255 * greenOpacity ;
     }
     updatePixels();
 
@@ -201,11 +325,11 @@ function getColors() {
     bperiod = Math.random() * 10 + 5;
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = functions[fIndex](pixels[i + 2], bperiod, 255);
+//      pixelValue = functions[fIndex](pixels[i + 2], bperiod, 255);
       pixels[i] = red(blueInk);
       pixels[i + 1] = green(blueInk);
       pixels[i + 2] = blue(blueInk);
-      pixels[i + 3] = pixelValue * 255 * blueOpacity;
+      pixels[i + 3] = (chans[(3*i/4)+2]||0) * 255 * blueOpacity ;
     }
     updatePixels();
 
@@ -221,6 +345,7 @@ function getColors() {
     var layer3 = document.getElementById("layer3");
     layer3.style.backgroundImage = "url(#)";
   }
+
 
   document.getElementById("layer0").classList.add("border");
   document.getElementById("layer0").classList.add("white");
