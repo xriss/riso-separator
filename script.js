@@ -131,6 +131,10 @@ var mobileDevice = false;
 var cards;
 let redImg, blueImg, greenImg;
 
+// a place to keep output
+let chans=[]
+
+
 if (
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
@@ -241,8 +245,6 @@ function getColors() {
 		vs[2][1]=unsrgb(green(blueInk))
 		vs[2][2]=unsrgb(blue(blueInk))
 	}
-	// a place to keep output
-	let chans=[]
 
 // not sure what these do
     image(img, width / 2, height / 2, img.width * scale, img.height * scale);
@@ -509,12 +511,14 @@ function downloadFiles() {
   scale = 1;
   canvas.size(img.width * scale, img.height * scale);
 
+  getColors();
+
   //red
   image(img, width / 2, height / 2, img.width * scale, img.height * scale);
 
   loadPixels();
   for (let i = 0; i < pixels.length; i += 4) {
-    pixelValue = functions[fIndex](pixels[i], rperiod, 255);
+    pixelValue = (chans[(3*i/4)+0]||0) // functions[fIndex](pixels[i], rperiod, 255);
     pixels[i] = 255 - pixelValue * 255 * redOpacity;
     pixels[i + 1] = 255 - pixelValue * 255 * redOpacity;
     pixels[i + 2] = 255 - pixelValue * 255 * redOpacity;
@@ -532,7 +536,7 @@ function downloadFiles() {
     image(img, width / 2, height / 2, img.width * scale, img.height * scale);
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = functions[fIndex](pixels[i + 1], gperiod, 255);
+      pixelValue = (chans[(3*i/4)+1]||0) // functions[fIndex](pixels[i + 1], gperiod, 255);
       pixels[i] = 255 - pixelValue * 255 * greenOpacity;
       pixels[i + 1] = 255 - pixelValue * 255 * greenOpacity;
       pixels[i + 2] = 255 - pixelValue * 255 * greenOpacity;
@@ -551,7 +555,7 @@ function downloadFiles() {
 
       loadPixels();
       for (let i = 0; i < pixels.length; i += 4) {
-        pixelValue = functions[fIndex](pixels[i + 2], bperiod, 255);
+        pixelValue = (chans[(3*i/4)+2]||0) // functions[fIndex](pixels[i + 2], bperiod, 255);
         pixels[i] = 255 - pixelValue * 255 * blueOpacity;
         pixels[i + 1] = 255 - pixelValue * 255 * blueOpacity;
         pixels[i + 2] = 255 - pixelValue * 255 * blueOpacity;
@@ -576,12 +580,15 @@ function downloadComposite() {
   var cs = document.getElementById("mycanvas");
   // Draw image to second canvas, update and multiply pixels on working canvas...
   //red
+
+  getColors();
+
   if (redInk) {
     image(img, width / 2, height / 2, img.width * scale, img.height * scale);
 
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = functions[fIndex](pixels[i], rperiod, 255);
+      pixelValue = (chans[(3*i/4)+0]||0) // functions[fIndex](pixels[i], rperiod, 255);
       pixels[i] = red(redInk);
       pixels[i + 1] = green(redInk);
       pixels[i + 2] = blue(redInk);
@@ -601,7 +608,7 @@ function downloadComposite() {
     loadPixels();
 
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = functions[fIndex](pixels[i + 1], gperiod, 255);
+      pixelValue = (chans[(3*i/4)+1]||0) //  functions[fIndex](pixels[i + 1], gperiod, 255);
       pixels[i] = red(greenInk);
       pixels[i + 1] = green(greenInk);
       pixels[i + 2] = blue(greenInk);
@@ -617,7 +624,7 @@ function downloadComposite() {
 
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = functions[fIndex](pixels[i + 2], bperiod, 255);
+      pixelValue = (chans[(3*i/4)+2]||0) // functions[fIndex](pixels[i + 2], bperiod, 255);
       pixels[i] = red(blueInk);
       pixels[i + 1] = green(blueInk);
       pixels[i + 2] = blue(blueInk);
