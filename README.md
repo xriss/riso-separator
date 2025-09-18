@@ -1,5 +1,7 @@
-A tool for RGB color separation + effects.
+Its a bit slower and I removed the functions but...
 
-www.risoseparator.tools
+much much slower since its all just off the top of my head without any optimisation attempt just a quick hack
 
-It lets you upload an image, separate the RGB channels, apply a Riso Ink color for each channel, and preview the printing results. For fun expressions, try the Crazy Curves™ treatment.
+It should try and map any image to the selected riso inks (upto 3) so when these inks are combined again you get as close to possible to the original image.
+
+This is no longer an RGB hack...
