@@ -171,7 +171,7 @@ var cards;
 let redImg, blueImg, greenImg;
 
 // a place to keep output
-let chans=[]
+let chans=[[],[],[]]
 
 
 if (
@@ -264,6 +264,16 @@ function getColors() {
     image.remove();
   });
 
+	let prog_str=""
+	let prog=function(s)
+	{
+		if(s!=prog_str)
+		{
+			prog_str=s
+			console.log(prog_str)
+		}
+	}
+
 	// build inks
 	let vs=[]
 	vs[0]=[0,0,0]
@@ -288,6 +298,12 @@ function getColors() {
 // not sure what these do
     image(img, width / 2, height / 2, img.width * scale, img.height * scale);
     loadPixels();
+    
+    chans[0]=new Float32Array(pixels.length);
+    chans[1]=new Float32Array(pixels.length);
+    chans[2]=new Float32Array(pixels.length);
+
+    
 // this is slow but more correct (functions no longer do anything)
     for( let i = 0 ; i < pixels.length ; i++ )
     {
@@ -298,9 +314,10 @@ function getColors() {
 		v[1]=unsrgb(pixels[pi+1])
 		v[2]=unsrgb(pixels[pi+2])
 		let rs=V3decompose(v,vs)
-		chans[ci+0]=rs[0]
-		chans[ci+1]=rs[1]
-		chans[ci+2]=rs[2]
+		chans[0][i]=rs[0]
+		chans[1][i]=rs[1]
+		chans[2][i]=rs[2]
+      if((i%100)==0) { prog(Math.floor(1000*i/pixels.length)/10+"%") }
     }
 
   //get red pixels
@@ -315,7 +332,7 @@ function getColors() {
       pixels[i] = red(redInk);
       pixels[i + 1] = green(redInk);
       pixels[i + 2] = blue(redInk);
-      pixels[i + 3] = (chans[(3*i/4)+0]||0) * 255 * redOpacity;
+      pixels[i + 3] = (chans[0][(i/4)]||0) * 255 * redOpacity;
     }
     updatePixels();
 
@@ -344,7 +361,7 @@ function getColors() {
       pixels[i] = red(greenInk);
       pixels[i + 1] = green(greenInk);
       pixels[i + 2] = blue(greenInk);
-      pixels[i + 3] = (chans[(3*i/4)+1]||0) * 255 * greenOpacity ;
+      pixels[i + 3] = (chans[1][(i/4)]||0) * 255 * greenOpacity ;
     }
     updatePixels();
 
@@ -370,7 +387,7 @@ function getColors() {
       pixels[i] = red(blueInk);
       pixels[i + 1] = green(blueInk);
       pixels[i + 2] = blue(blueInk);
-      pixels[i + 3] = (chans[(3*i/4)+2]||0) * 255 * blueOpacity ;
+      pixels[i + 3] = (chans[2][(i/4)]||0) * 255 * blueOpacity ;
     }
     updatePixels();
 
@@ -557,7 +574,7 @@ function downloadFiles() {
 
   loadPixels();
   for (let i = 0; i < pixels.length; i += 4) {
-    pixelValue = (chans[(3*i/4)+0]||0) // functions[fIndex](pixels[i], rperiod, 255);
+    pixelValue = (chans[0][(i/4)]||0) // functions[fIndex](pixels[i], rperiod, 255);
         let grey=tosrgb(pixelValue*blueOpacity) // need to apply gamma and reverse I think
         pixels[i] = grey;
         pixels[i + 1] = grey;
@@ -576,7 +593,7 @@ function downloadFiles() {
     image(img, width / 2, height / 2, img.width * scale, img.height * scale);
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = (chans[(3*i/4)+1]||0) // functions[fIndex](pixels[i + 1], gperiod, 255);
+      pixelValue = (chans[1][(i/4)]||0) // functions[fIndex](pixels[i + 1], gperiod, 255);
         let grey=tosrgb(pixelValue*blueOpacity) // need to apply gamma and reverse I think
         pixels[i] = grey;
         pixels[i + 1] = grey;
@@ -596,7 +613,7 @@ function downloadFiles() {
 
       loadPixels();
       for (let i = 0; i < pixels.length; i += 4) {
-        pixelValue = (chans[(3*i/4)+2]||0) // functions[fIndex](pixels[i + 2], bperiod, 255);
+        pixelValue = (chans[2][(i/4)]||0) // functions[fIndex](pixels[i + 2], bperiod, 255);
         let grey=tosrgb(pixelValue*blueOpacity) // need to apply gamma and reverse I think
         pixels[i] = grey;
         pixels[i + 1] = grey;
@@ -623,14 +640,13 @@ function downloadComposite() {
   // Draw image to second canvas, update and multiply pixels on working canvas...
   //red
 
-  getColors();
 
   if (redInk) {
     image(img, width / 2, height / 2, img.width * scale, img.height * scale);
 
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = (chans[(3*i/4)+0]||0) // functions[fIndex](pixels[i], rperiod, 255);
+      pixelValue = (chans[0][(i/4)]||0) // functions[fIndex](pixels[i], rperiod, 255);
       pixels[i] = red(redInk);
       pixels[i + 1] = green(redInk);
       pixels[i + 2] = blue(redInk);
@@ -650,7 +666,7 @@ function downloadComposite() {
     loadPixels();
 
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = (chans[(3*i/4)+1]||0) //  functions[fIndex](pixels[i + 1], gperiod, 255);
+      pixelValue = (chans[1][(i/4)]||0) //  functions[fIndex](pixels[i + 1], gperiod, 255);
       pixels[i] = red(greenInk);
       pixels[i + 1] = green(greenInk);
       pixels[i + 2] = blue(greenInk);
@@ -666,7 +682,7 @@ function downloadComposite() {
 
     loadPixels();
     for (let i = 0; i < pixels.length; i += 4) {
-      pixelValue = (chans[(3*i/4)+2]||0) // functions[fIndex](pixels[i + 2], bperiod, 255);
+      pixelValue = (chans[2][(i/4)]||0) // functions[fIndex](pixels[i + 2], bperiod, 255);
       pixels[i] = red(blueInk);
       pixels[i + 1] = green(blueInk);
       pixels[i + 2] = blue(blueInk);
